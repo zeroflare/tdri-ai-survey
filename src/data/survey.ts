@@ -37,6 +37,27 @@ export const PRESCREEN_QUESTIONS = surveyData.prescreenQuestions as PrescreenQue
 
 export const DATA_CLASSIFICATION = surveyData.dataClassification;
 
+export interface GlossaryTerm {
+  term: string;
+  aliases: string[];
+  definition: string;
+}
+
+export const GLOSSARY_TERMS = surveyData.glossaryTerms as GlossaryTerm[];
+
+/** Return glossary entries mentioned in the given text (longest alias first). */
+export function getGlossaryMatches(...texts: string[]): GlossaryTerm[] {
+  const haystack = texts.join("\n");
+  const matched: GlossaryTerm[] = [];
+  for (const entry of GLOSSARY_TERMS) {
+    const aliases = [...entry.aliases].sort((a, b) => b.length - a.length);
+    if (aliases.some((alias) => haystack.includes(alias))) {
+      matched.push(entry);
+    }
+  }
+  return matched;
+}
+
 export const SCORE_TIERS = surveyData.scoreTiers;
 
 export const SURVEY_MODULES = surveyData.modules as SurveyModule[];

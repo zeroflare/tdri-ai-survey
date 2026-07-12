@@ -582,6 +582,63 @@ button {
   white-space: pre-line;
 }
 
+.glossary-notes {
+  margin: -0.25rem 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.glossary-notes__label {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.glossary-notes__list {
+  margin: 0;
+}
+
+.glossary-notes__item {
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .glossary-notes__item {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
+.glossary-notes__item + .glossary-notes__item {
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--color-border);
+}
+
+.glossary-notes__item dt {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.glossary-notes__item dd {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.prescreen-item .glossary-notes {
+  margin-top: 0.65rem;
+  margin-bottom: 0;
+}
+
 .question-card__risk {
   margin-top: 0.85rem;
 }

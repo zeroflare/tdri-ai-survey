@@ -408,7 +408,7 @@ export const CHANGELOG_REVISIONS: ChangelogRevision[] = [
   {
     id: "20260713",
     title: "20260713 改版說明",
-    summary: "題目精簡與改寫：50 → 45 題，題組 A／B 對調，五組合併並新增 A-04、C-07、C-08。",
+    summary: "題目精簡與改寫：50 → 45 題，題組 A／B 對調，五組合併並新增 A-04、C-07、C-08；另加常見名詞白話對照。",
     data: CHANGELOG,
   },
 ];

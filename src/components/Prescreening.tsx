@@ -1,5 +1,6 @@
 import type { PrescreenAnswer } from "../data/survey";
-import { PRESCREEN_QUESTIONS } from "../data/survey";
+import { getGlossaryMatches, PRESCREEN_QUESTIONS } from "../data/survey";
+import { GlossaryNotes } from "./GlossaryNotes";
 
 interface PrescreeningProps {
   answers: Record<string, PrescreenAnswer>;
@@ -25,6 +26,7 @@ export function Prescreening({ answers, onChange }: PrescreeningProps) {
               {q.moduleLabel && (
                 <div className="prescreen-item__module">包含回答{q.moduleLabel}</div>
               )}
+              <GlossaryNotes terms={getGlossaryMatches(q.text)} />
             </div>
           </div>
           <div className="radio-group">

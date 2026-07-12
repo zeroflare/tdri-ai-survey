@@ -1,4 +1,4 @@
-import { DATA_CLASSIFICATION, getFullMaxScore, getModuleMaxScore, SCORE_TIERS, SURVEY_MODULES } from "../data/survey";
+import { DATA_CLASSIFICATION, GLOSSARY_TERMS, getFullMaxScore, getModuleMaxScore, SCORE_TIERS, SURVEY_MODULES } from "../data/survey";
 
 export function Instructions() {
   return (
@@ -71,6 +71,29 @@ export function Instructions() {
               <tr key={row.level}>
                 <th>{row.level}</th>
                 <td>{row.examples}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">常見名詞白話對照</h2>
+        <p className="card__subtitle">
+          題目中出現下列名詞時，可對照此表的白話說明；訪談或導讀時也可直接引用。出現該名詞的題目旁也會顯示說明。
+        </p>
+        <table className="info-table">
+          <thead>
+            <tr>
+              <th>名詞</th>
+              <th>白話說明</th>
+            </tr>
+          </thead>
+          <tbody>
+            {GLOSSARY_TERMS.map((row) => (
+              <tr key={row.term}>
+                <th>{row.term}</th>
+                <td>{row.definition}</td>
               </tr>
             ))}
           </tbody>
