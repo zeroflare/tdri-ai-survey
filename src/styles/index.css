@@ -570,6 +570,7 @@ button {
   font-size: 0.95rem;
   font-weight: 500;
   flex: 1;
+  white-space: pre-line;
 }
 
 .question-card__hint {
@@ -578,6 +579,7 @@ button {
   margin-bottom: 0.85rem;
   padding-left: 0.5rem;
   border-left: 3px solid #e4e7ec;
+  white-space: pre-line;
 }
 
 .question-card__risk {
@@ -743,6 +745,7 @@ button {
   margin: 0 0 0.5rem;
   font-size: 0.92rem;
   line-height: 1.55;
+  white-space: pre-line;
 }
 
 .answer-record__answer {
