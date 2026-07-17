@@ -1,5 +1,5 @@
 import type { PrescreenAnswer } from "../data/survey";
-import { getGlossaryMatches, PRESCREEN_QUESTIONS } from "../data/survey";
+import { getGlossaryMatches, getSurveyData } from "../data/survey";
 import { GlossaryNotes } from "./GlossaryNotes";
 
 interface PrescreeningProps {
@@ -8,6 +8,8 @@ interface PrescreeningProps {
 }
 
 export function Prescreening({ answers, onChange }: PrescreeningProps) {
+  const prescreenQuestions = getSurveyData().prescreenQuestions;
+
   return (
     <div>
       <div className="card">
@@ -17,7 +19,7 @@ export function Prescreening({ answers, onChange }: PrescreeningProps) {
         </p>
       </div>
 
-      {PRESCREEN_QUESTIONS.map((q) => (
+      {prescreenQuestions.map((q) => (
         <div key={q.id} className="prescreen-item">
           <div className="prescreen-item__header">
             <span className="prescreen-item__id">分流-{q.id}</span>
@@ -58,5 +60,7 @@ export function Prescreening({ answers, onChange }: PrescreeningProps) {
 }
 
 export function isPrescreenComplete(answers: Record<string, PrescreenAnswer>): boolean {
-  return PRESCREEN_QUESTIONS.every((q) => answers[q.id] !== null && answers[q.id] !== undefined);
+  return getSurveyData().prescreenQuestions.every(
+    (q) => answers[q.id] !== null && answers[q.id] !== undefined,
+  );
 }

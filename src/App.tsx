@@ -1,16 +1,25 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { AnswerValue, PrescreenAnswer } from "./data/survey";
-import { getActiveModules, PRESCREEN_QUESTIONS } from "./data/survey";
+import {
+  CURRENT_SURVEY_VERSION,
+  getActiveModules,
+  loadSurveyData,
+} from "./data/survey";
+import { BasicInfo, EMPTY_PROFILE, isProfileComplete, type UserProfile } from "./components/BasicInfo";
 import { Instructions } from "./components/Instructions";
 import { Prescreening, isPrescreenComplete } from "./components/Prescreening";
 import { hasActiveModules, isSurveyComplete, Questionnaire } from "./components/Questionnaire";
 import { Results } from "./components/Results";
 import { StepNav, type StepId } from "./components/StepNav";
+import { SurveyBootScreen } from "./components/SurveyBootScreen";
+import { pathnameToStep, stepToPath } from "./lib/routes";
 
 const STORAGE_KEY = "tdri-ai-survey-state";
+const PRESCREEN_IDS = ["01", "02", "03", "04", "05", "06"] as const;
 
 interface SurveyState {
-  step: StepId;
+  profile: UserProfile;
   prescreen: Record<string, PrescreenAnswer>;
   answers: Record<string, AnswerValue>;
 }
@@ -19,7 +28,12 @@ function loadState(): SurveyState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as SurveyState;
+    const parsed = JSON.parse(raw) as SurveyState & { step?: StepId };
+    return {
+      profile: parsed.profile,
+      prescreen: parsed.prescreen,
+      answers: parsed.answers,
+    };
   } catch {
     return null;
   }
@@ -34,9 +48,23 @@ function normalizePrescreen(
 ): Record<string, PrescreenAnswer> {
   const defaults = defaultPrescreen();
   if (!prescreen) return defaults;
-  return Object.fromEntries(
-    PRESCREEN_QUESTIONS.map((q) => [q.id, prescreen[q.id] ?? defaults[q.id]]),
-  ) as Record<string, PrescreenAnswer>;
+  const result = { ...defaults };
+  for (const id of PRESCREEN_IDS) {
+    if (prescreen[id] !== null && prescreen[id] !== undefined) {
+      result[id] = prescreen[id];
+    }
+  }
+  return result;
+}
+
+function normalizeProfile(profile: UserProfile | undefined): UserProfile {
+  if (!profile) return { ...EMPTY_PROFILE };
+  return {
+    name: profile.name ?? "",
+    company: profile.company ?? "",
+    title: profile.title ?? "",
+    email: profile.email ?? "",
+  };
 }
 
 function pruneAnswersForPrescreen(
@@ -50,39 +78,73 @@ function pruneAnswersForPrescreen(
 }
 
 export default function App() {
-  const saved = loadState();
-  const initialPrescreen = normalizePrescreen(saved?.prescreen);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const step = pathnameToStep(location.pathname);
 
-  const [step, setStep] = useState<StepId>(saved?.step ?? "intro");
-  const [prescreen, setPrescreen] = useState<Record<string, PrescreenAnswer>>(initialPrescreen);
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>(
-    pruneAnswersForPrescreen(saved?.answers ?? {}, initialPrescreen),
-  );
+  const [bootState, setBootState] = useState<"loading" | "ready" | "error">("loading");
+  const [profile, setProfile] = useState<UserProfile>({ ...EMPTY_PROFILE });
+  const [prescreen, setPrescreen] = useState<Record<string, PrescreenAnswer>>(defaultPrescreen());
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [validationMsg, setValidationMsg] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+
+    loadSurveyData(CURRENT_SURVEY_VERSION)
+      .then(() => {
+        if (cancelled) return;
+        const saved = loadState();
+        const nextPrescreen = normalizePrescreen(saved?.prescreen);
+        setProfile(normalizeProfile(saved?.profile));
+        setPrescreen(nextPrescreen);
+        setAnswers(pruneAnswersForPrescreen(saved?.answers ?? {}, nextPrescreen));
+        setBootState("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setBootState("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!step) {
+      navigate(stepToPath("intro"), { replace: true });
+    }
+  }, [step, navigate]);
+
   const completed = new Set<StepId>();
-  if (step !== "intro") completed.add("intro");
+  if (step && step !== "intro") completed.add("intro");
+  if (step === "prescreen" || step === "survey" || step === "result") completed.add("profile");
   if (step === "survey" || step === "result") completed.add("prescreen");
   if (step === "result") completed.add("survey");
 
   const persist = useCallback(
     (next: Partial<SurveyState>) => {
       const state: SurveyState = {
-        step,
+        profile,
         prescreen,
         answers,
         ...next,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     },
-    [step, prescreen, answers],
+    [profile, prescreen, answers],
   );
 
   const goTo = (next: StepId) => {
     setValidationMsg("");
-    setStep(next);
-    persist({ step: next });
+    navigate(stepToPath(next));
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleProfileChange = (field: keyof UserProfile, value: string) => {
+    const next = { ...profile, [field]: value };
+    setProfile(next);
+    persist({ profile: next });
   };
 
   const handlePrescreenChange = (id: string, value: boolean) => {
@@ -101,15 +163,27 @@ export default function App() {
 
   const handleRestart = () => {
     localStorage.removeItem(STORAGE_KEY);
-    setStep("intro");
+    setProfile({ ...EMPTY_PROFILE });
     setPrescreen(defaultPrescreen());
     setAnswers({});
     setValidationMsg("");
+    navigate(stepToPath("intro"));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNext = () => {
+    if (!step) return;
+
     if (step === "intro") {
+      goTo("profile");
+      return;
+    }
+
+    if (step === "profile") {
+      if (!isProfileComplete(profile)) {
+        setValidationMsg("請填寫姓名、公司、職稱與有效信箱後再繼續。");
+        return;
+      }
       goTo("prescreen");
       return;
     }
@@ -139,10 +213,22 @@ export default function App() {
   };
 
   const handleBack = () => {
-    if (step === "prescreen") goTo("intro");
+    if (!step) return;
+    if (step === "profile") goTo("intro");
+    else if (step === "prescreen") goTo("profile");
     else if (step === "survey") goTo("prescreen");
     else if (step === "result") goTo("survey");
   };
+
+  if (bootState === "loading") {
+    return <SurveyBootScreen message="載入問卷資料…" />;
+  }
+
+  if (bootState === "error") {
+    return <SurveyBootScreen message="問卷資料載入失敗，請重新整理頁面。" error />;
+  }
+
+  if (!step) return null;
 
   return (
     <div className="app-shell">
@@ -164,6 +250,7 @@ export default function App() {
 
         {validationMsg && <div className="validation-msg">{validationMsg}</div>}
 
+        {step === "profile" && <BasicInfo profile={profile} onChange={handleProfileChange} />}
         {step === "intro" && <Instructions />}
         {step === "prescreen" && (
           <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
@@ -172,7 +259,12 @@ export default function App() {
           <Questionnaire answers={answers} prescreen={prescreen} onChange={handleAnswerChange} />
         )}
         {step === "result" && (
-          <Results answers={answers} prescreen={prescreen} onRestart={handleRestart} />
+          <Results
+            profile={profile}
+            answers={answers}
+            prescreen={prescreen}
+            onRestart={handleRestart}
+          />
         )}
 
         {step !== "result" && (

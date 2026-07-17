@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { AnswerValue, PrescreenAnswer } from "../data/survey";
-import { ANSWER_OPTIONS, getActiveModules, getGlossaryMatches } from "../data/survey";
+import { getActiveModules, getGlossaryMatches, getSurveyData } from "../data/survey";
 import { calculateScore, formatPoints, getQuestionPoints, getRiskLabel } from "../lib/scoring";
 import { GlossaryNotes } from "./GlossaryNotes";
 
@@ -41,7 +41,7 @@ export function QuestionCard({
       <GlossaryNotes terms={glossaryTerms} />
 
       <div className="answer-options">
-        {ANSWER_OPTIONS.map((opt) => (
+        {getSurveyData().answerOptions.map((opt) => (
           <div className="radio-option" key={opt.value}>
             <input
               type="radio"

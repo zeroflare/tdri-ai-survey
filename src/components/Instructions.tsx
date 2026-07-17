@@ -1,6 +1,8 @@
-import { DATA_CLASSIFICATION, getFullMaxScore, getModuleMaxScore, SURVEY_MODULES } from "../data/survey";
+import { getFullMaxScore, getModuleMaxScore, getSurveyData } from "../data/survey";
 
 export function Instructions() {
+  const survey = getSurveyData();
+
   return (
     <div>
       <div className="card">
@@ -18,7 +20,7 @@ export function Instructions() {
         </p>
         <table className="info-table info-table--group-list">
           <tbody>
-            {SURVEY_MODULES.map((group) => (
+            {survey.modules.map((group) => (
               <tr key={group.id}>
                 <th>題組 {group.id}</th>
                 <td>{group.subtitle}</td>
@@ -67,7 +69,7 @@ export function Instructions() {
             </tr>
           </thead>
           <tbody>
-            {DATA_CLASSIFICATION.map((row) => (
+            {survey.dataClassification.map((row) => (
               <tr key={row.level}>
                 <th>{row.level}</th>
                 <td>{row.examples}</td>

@@ -1,5 +1,6 @@
 const STEPS = [
   { id: "intro", label: "檢核表說明" },
+  { id: "profile", label: "基本資料" },
   { id: "prescreen", label: "前導分流" },
   { id: "survey", label: "填寫問卷" },
   { id: "result", label: "評估結果" },

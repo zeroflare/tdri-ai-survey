@@ -1,10 +1,5 @@
 import type { AnswerValue, PrescreenAnswer } from "../data/survey";
-import {
-  getMaxScore,
-  isModuleActive,
-  SCORE_TIERS,
-  SURVEY_MODULES,
-} from "../data/survey";
+import { getMaxScore, getSurveyData, isModuleActive } from "../data/survey";
 
 export interface QuestionResult {
   id: string;
@@ -26,7 +21,7 @@ export interface ScoreResult {
   needsPriority: boolean;
   highRiskFailures: QuestionResult[];
   lowScoreQuestions: QuestionResult[];
-  tier: (typeof SCORE_TIERS)[number];
+  tier: { label: string; min: number; max: number; advice: string };
   activeModules: string[];
   inactiveModules: string[];
 }
@@ -52,7 +47,9 @@ export function formatPoints(n: number): string {
 export function calculateScore(
   answers: Record<string, AnswerValue>,
   prescreen: Record<string, PrescreenAnswer>,
+  surveyVersion?: string | null,
 ): ScoreResult {
+  const survey = getSurveyData(surveyVersion);
   let score = 0;
   let answeredCount = 0;
   let totalQuestions = 0;
@@ -61,7 +58,7 @@ export function calculateScore(
   const activeModules: string[] = [];
   const inactiveModules: string[] = [];
 
-  for (const module of SURVEY_MODULES) {
+  for (const module of survey.modules) {
     const active = isModuleActive(module, prescreen);
     if (active) {
       activeModules.push(`${module.title}｜${module.subtitle}`);
@@ -100,13 +97,13 @@ export function calculateScore(
     }
   }
 
-  const maxScore = getMaxScore(prescreen);
+  const maxScore = getMaxScore(prescreen, surveyVersion);
   const roundedScore = Math.round(score * 10) / 10;
   const scorePercent = maxScore > 0 ? Math.round((roundedScore / maxScore) * 1000) / 10 : 0;
   const needsPriority = highRiskFailures.length > 0;
   const tier =
-    SCORE_TIERS.find((t) => scorePercent >= t.min && scorePercent <= t.max) ??
-    SCORE_TIERS[SCORE_TIERS.length - 1];
+    survey.scoreTiers.find((t) => scorePercent >= t.min && scorePercent <= t.max) ??
+    survey.scoreTiers[survey.scoreTiers.length - 1];
 
   return {
     score: roundedScore,
@@ -125,19 +122,9 @@ export function calculateScore(
   };
 }
 
-export function getAnswerLabel(answer: AnswerValue): string {
-  switch (answer) {
-    case "done":
-      return "已做到";
-    case "partial":
-      return "部分做到";
-    case "not_done":
-      return "尚未做到";
-    case "unknown":
-      return "不知道";
-    case "na":
-      return "不適用";
-  }
+export function getAnswerLabel(answer: AnswerValue, surveyVersion?: string | null): string {
+  const option = getSurveyData(surveyVersion).answerOptions.find((o) => o.value === answer);
+  return option?.label ?? answer;
 }
 
 export function getRiskLabel(weight: 1 | 2 | 3): string {
