@@ -51,19 +51,19 @@ export function ReportView({ profile, answers, prescreen, surveyVersion }: Repor
         <dl className="profile-summary">
           <div>
             <dt>姓名</dt>
-            <dd>{profile.name}</dd>
+            <dd>{profile.name || "—"}</dd>
           </div>
           <div>
             <dt>公司</dt>
-            <dd>{profile.company}</dd>
+            <dd>{profile.company || "—"}</dd>
           </div>
           <div>
             <dt>職稱</dt>
-            <dd>{profile.title}</dd>
+            <dd>{profile.title || "—"}</dd>
           </div>
           <div>
             <dt>信箱</dt>
-            <dd>{profile.email}</dd>
+            <dd>{profile.email || "—"}</dd>
           </div>
         </dl>
       </div>

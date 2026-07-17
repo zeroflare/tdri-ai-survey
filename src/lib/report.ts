@@ -179,7 +179,7 @@ export function buildReportUrl(payload: ReportPayload): string {
   const basePath = import.meta.env.BASE_URL.replace(/\/?$/, "/");
   const encoded = encodeReportPayload(payload);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  return `${origin}${basePath}report?d=${encoded}`;
+  return `${origin}${basePath}#/report?d=${encoded}`;
 }
 
 export function createReportPayload(

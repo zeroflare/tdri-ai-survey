@@ -50,6 +50,15 @@ export function Results({ profile, answers, prescreen, onRestart }: ResultsProps
 
   return (
     <div>
+      <div className="btn-row btn-row--top">
+        <button type="button" className="btn btn--primary" onClick={onRestart}>
+          重新填寫
+        </button>
+        <button type="button" className="btn btn--secondary" onClick={() => window.print()}>
+          列印結果
+        </button>
+      </div>
+
       <div className="card">
         <h2 className="card__title">報告連結</h2>
         <p className="card__subtitle">
@@ -70,15 +79,6 @@ export function Results({ profile, answers, prescreen, onRestart }: ResultsProps
         prescreen={prescreen}
         surveyVersion={CURRENT_SURVEY_VERSION}
       />
-
-      <div className="btn-row">
-        <button type="button" className="btn btn--primary" onClick={onRestart}>
-          重新填寫
-        </button>
-        <button type="button" className="btn btn--secondary" onClick={() => window.print()}>
-          列印結果
-        </button>
-      </div>
     </div>
   );
 }

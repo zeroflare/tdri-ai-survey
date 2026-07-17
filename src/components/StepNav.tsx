@@ -11,9 +11,10 @@ export type StepId = (typeof STEPS)[number]["id"];
 interface StepNavProps {
   current: StepId;
   completed: Set<StepId>;
+  onSelect?: (step: StepId) => void;
 }
 
-export function StepNav({ current, completed }: StepNavProps) {
+export function StepNav({ current, completed, onSelect }: StepNavProps) {
   const currentIndex = STEPS.findIndex((s) => s.id === current);
 
   return (
@@ -25,15 +26,23 @@ export function StepNav({ current, completed }: StepNavProps) {
           "step-nav__item",
           isActive ? "step-nav__item--active" : "",
           isDone && !isActive ? "step-nav__item--done" : "",
+          onSelect ? "step-nav__item--clickable" : "",
         ]
           .filter(Boolean)
           .join(" ");
 
         return (
-          <div key={step.id} className={className} aria-current={isActive ? "step" : undefined}>
+          <button
+            key={step.id}
+            type="button"
+            className={className}
+            aria-current={isActive ? "step" : undefined}
+            onClick={() => onSelect?.(step.id)}
+            disabled={!onSelect}
+          >
             <span className="step-nav__num">{index + 1}</span>
             {step.label}
-          </div>
+          </button>
         );
       })}
     </nav>

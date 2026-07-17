@@ -6,13 +6,14 @@ import {
   getActiveModules,
   loadSurveyData,
 } from "./data/survey";
-import { BasicInfo, EMPTY_PROFILE, isProfileComplete, type UserProfile } from "./components/BasicInfo";
+import { BasicInfo, EMPTY_PROFILE, isProfileValid, type UserProfile } from "./components/BasicInfo";
 import { Instructions } from "./components/Instructions";
 import { Prescreening, isPrescreenComplete } from "./components/Prescreening";
 import { hasActiveModules, isSurveyComplete, Questionnaire } from "./components/Questionnaire";
 import { Results } from "./components/Results";
 import { StepNav, type StepId } from "./components/StepNav";
 import { SurveyBootScreen } from "./components/SurveyBootScreen";
+import { FeedbackButton } from "./components/FeedbackButton";
 import { pathnameToStep, stepToPath } from "./lib/routes";
 
 const STORAGE_KEY = "tdri-ai-survey-state";
@@ -180,8 +181,8 @@ export default function App() {
     }
 
     if (step === "profile") {
-      if (!isProfileComplete(profile)) {
-        setValidationMsg("請填寫姓名、公司、職稱與有效信箱後再繼續。");
+      if (!isProfileValid(profile)) {
+        setValidationMsg("若填寫信箱，請輸入有效格式，或留空即可。");
         return;
       }
       goTo("prescreen");
@@ -221,11 +222,21 @@ export default function App() {
   };
 
   if (bootState === "loading") {
-    return <SurveyBootScreen message="載入問卷資料…" />;
+    return (
+      <>
+        <SurveyBootScreen message="載入問卷資料…" />
+        <FeedbackButton />
+      </>
+    );
   }
 
   if (bootState === "error") {
-    return <SurveyBootScreen message="問卷資料載入失敗，請重新整理頁面。" error />;
+    return (
+      <>
+        <SurveyBootScreen message="問卷資料載入失敗，請重新整理頁面。" error />
+        <FeedbackButton />
+      </>
+    );
   }
 
   if (!step) return null;
@@ -236,8 +247,13 @@ export default function App() {
         <div className="app-header__inner">
           <p className="app-header__org">台灣設計研究院</p>
           <h1 className="app-header__title">
-            台灣設計產業 AI 資安自評檢核表
-            <span className="app-header__beta">Beta</span>
+            <button
+              type="button"
+              className="app-header__title-link"
+              onClick={() => goTo("intro")}
+            >
+              台灣設計產業 AI 資安自評檢核表
+            </button>
           </h1>
           <p className="app-header__subtitle">
             協助設計業自我檢視運用 AI 工具時的資通安全與法令遵循風險
@@ -246,26 +262,28 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        <StepNav current={step} completed={completed} />
+        <StepNav current={step} completed={completed} onSelect={goTo} />
 
         {validationMsg && <div className="validation-msg">{validationMsg}</div>}
 
-        {step === "profile" && <BasicInfo profile={profile} onChange={handleProfileChange} />}
-        {step === "intro" && <Instructions />}
-        {step === "prescreen" && (
-          <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
-        )}
-        {step === "survey" && (
-          <Questionnaire answers={answers} prescreen={prescreen} onChange={handleAnswerChange} />
-        )}
-        {step === "result" && (
-          <Results
-            profile={profile}
-            answers={answers}
-            prescreen={prescreen}
-            onRestart={handleRestart}
-          />
-        )}
+        <div key={step} className="step-transition">
+          {step === "profile" && <BasicInfo profile={profile} onChange={handleProfileChange} />}
+          {step === "intro" && <Instructions />}
+          {step === "prescreen" && (
+            <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
+          )}
+          {step === "survey" && (
+            <Questionnaire answers={answers} prescreen={prescreen} onChange={handleAnswerChange} />
+          )}
+          {step === "result" && (
+            <Results
+              profile={profile}
+              answers={answers}
+              prescreen={prescreen}
+              onRestart={handleRestart}
+            />
+          )}
+        </div>
 
         {step !== "result" && (
           <div className="sticky-footer">
@@ -286,6 +304,8 @@ export default function App() {
       <footer className="app-footer">
         <p>台灣設計研究院</p>
       </footer>
+
+      <FeedbackButton />
     </div>
   );
 }

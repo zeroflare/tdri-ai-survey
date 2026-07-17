@@ -12,15 +12,10 @@ export const EMPTY_PROFILE: UserProfile = {
   email: "",
 };
 
-export function isProfileComplete(profile: UserProfile): boolean {
+export function isProfileValid(profile: UserProfile): boolean {
   const email = profile.email.trim();
-  return (
-    profile.name.trim() !== "" &&
-    profile.company.trim() !== "" &&
-    profile.title.trim() !== "" &&
-    email !== "" &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  );
+  if (email === "") return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 interface BasicInfoProps {
@@ -39,13 +34,12 @@ export function BasicInfo({ profile, onChange }: BasicInfoProps) {
   return (
     <div className="card">
       <h2 className="card__title">基本資料</h2>
-      <p className="card__subtitle">請先填寫以下資料，再開始檢核表填答。</p>
+      <p className="card__subtitle">以下資料皆為選填，若有填寫有助於辨識填答者與留存紀錄。</p>
       <form className="profile-form" onSubmit={(e) => e.preventDefault()}>
         {FIELDS.map(({ key, label, type, placeholder }) => (
           <div className="profile-form__field" key={key}>
             <label className="profile-form__label" htmlFor={`profile-${key}`}>
               {label}
-              <span className="profile-form__required">*</span>
             </label>
             <input
               id={`profile-${key}`}

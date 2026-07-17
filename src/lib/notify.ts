@@ -1,3 +1,4 @@
+import { postToGoogleChat } from "./chatWebhook";
 import type { ReportPayload } from "./report";
 import { calculateScore, formatPoints } from "./scoring";
 
@@ -28,28 +29,10 @@ function buildMessage({ payload, reportUrl }: NotifyOptions): string {
 }
 
 export async function notifySurveyCompleted(options: NotifyOptions): Promise<boolean> {
-  const webhookUrl = import.meta.env.VITE_GOOGLE_CHAT_WEBHOOK;
-  if (!webhookUrl) return false;
-
   const dedupeKey = `${NOTIFY_SESSION_PREFIX}${options.reportUrl}`;
   if (sessionStorage.getItem(dedupeKey)) return false;
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=UTF-8" },
-      body: JSON.stringify({ text: buildMessage(options) }),
-    });
-
-    if (!response.ok) {
-      console.warn("Google Chat 通知失敗", response.status, await response.text());
-      return false;
-    }
-
-    sessionStorage.setItem(dedupeKey, "1");
-    return true;
-  } catch (error) {
-    console.warn("Google Chat 通知失敗", error);
-    return false;
-  }
+  const sent = await postToGoogleChat(buildMessage(options));
+  if (sent) sessionStorage.setItem(dedupeKey, "1");
+  return sent;
 }

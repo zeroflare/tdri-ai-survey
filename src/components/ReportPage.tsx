@@ -4,6 +4,7 @@ import { formatSurveyVersionLabel, loadSurveyData } from "../data/survey";
 import { decodeReportPayload, isReportPayloadValid } from "../lib/report";
 import { ReportView } from "./ReportView";
 import { SurveyBootScreen } from "./SurveyBootScreen";
+import { FeedbackButton } from "./FeedbackButton";
 import { stepToPath } from "../lib/routes";
 
 export function ReportPage() {
@@ -35,15 +36,23 @@ export function ReportPage() {
   }, [payload, isValid]);
 
   if (payload && isValid && loadState === "loading") {
-    return <SurveyBootScreen message="載入報告資料…" />;
+    return (
+      <>
+        <SurveyBootScreen message="載入報告資料…" />
+        <FeedbackButton />
+      </>
+    );
   }
 
   if (payload && isValid && loadState === "error") {
     return (
-      <SurveyBootScreen
-        message={`問卷版本 ${formatSurveyVersionLabel(payload.surveyVersion)} 載入失敗，請確認 JSON 檔是否存在。`}
-        error
-      />
+      <>
+        <SurveyBootScreen
+          message={`問卷版本 ${formatSurveyVersionLabel(payload.surveyVersion)} 載入失敗，請確認 JSON 檔是否存在。`}
+          error
+        />
+        <FeedbackButton />
+      </>
     );
   }
 
@@ -53,8 +62,9 @@ export function ReportPage() {
         <div className="app-header__inner">
           <p className="app-header__org">台灣設計研究院</p>
           <h1 className="app-header__title">
-            台灣設計產業 AI 資安自評檢核表
-            <span className="app-header__beta">Beta</span>
+            <Link to={stepToPath("intro")} className="app-header__title-link">
+              台灣設計產業 AI 資安自評檢核表
+            </Link>
           </h1>
           <p className="app-header__subtitle">評估報告</p>
         </div>
@@ -85,13 +95,7 @@ export function ReportPage() {
           </div>
         ) : loadState === "ready" ? (
           <>
-            <ReportView
-              profile={payload.profile}
-              answers={payload.answers}
-              prescreen={payload.prescreen}
-              surveyVersion={payload.surveyVersion}
-            />
-            <div className="btn-row">
+            <div className="btn-row btn-row--top">
               <Link to={stepToPath("intro")} className="btn btn--secondary">
                 填寫新問卷
               </Link>
@@ -99,6 +103,12 @@ export function ReportPage() {
                 列印報告
               </button>
             </div>
+            <ReportView
+              profile={payload.profile}
+              answers={payload.answers}
+              prescreen={payload.prescreen}
+              surveyVersion={payload.surveyVersion}
+            />
           </>
         ) : null}
       </main>
@@ -106,6 +116,8 @@ export function ReportPage() {
       <footer className="app-footer">
         <p>台灣設計研究院</p>
       </footer>
+
+      <FeedbackButton />
     </div>
   );
 }
