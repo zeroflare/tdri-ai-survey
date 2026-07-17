@@ -46,12 +46,8 @@ export function FeedbackButton() {
 
     const sent = await sendFeedback({
       message,
-      profile: {
-        name: name || saved.name,
-        company: saved.company,
-        title: saved.title,
-        email: email || saved.email,
-      },
+      name: name || saved.name,
+      email: email || saved.email,
     });
 
     if (sent) {
