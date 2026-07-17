@@ -34,7 +34,7 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /tdri-ai-survey/
-          VITE_GOOGLE_CHAT_WEBHOOK: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+          VITE_GOOGLE_CHAT_WEBHOOK: ${{ secrets.VITE_GOOGLE_CHAT_WEBHOOK }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
