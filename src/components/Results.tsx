@@ -1,5 +1,5 @@
 import type { AnswerValue, PrescreenAnswer } from "../data/survey";
-import { getActiveModules } from "../data/survey";
+import { getActiveModules, SCORE_TIERS } from "../data/survey";
 import {
   calculateScore,
   formatPoints,
@@ -60,6 +60,36 @@ export function Results({ answers, prescreen, onRestart }: ResultsProps) {
               <th>得分率</th>
               <td>{result.scorePercent}%</td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card">
+        <h2 className="card__title">得分率與建議</h2>
+        <p className="card__subtitle">
+          請依得分率對照下表；無論落於何一級距，凡標示「需優先處理」之高風險題均應最先處理。
+        </p>
+        <table className="info-table">
+          <thead>
+            <tr>
+              <th>得分率</th>
+              <th>建議注意事項</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SCORE_TIERS.map((tier) => (
+              <tr
+                key={tier.label}
+                className={
+                  result.scorePercent >= tier.min && result.scorePercent <= tier.max
+                    ? "info-table__row--current"
+                    : undefined
+                }
+              >
+                <th>{tier.label}</th>
+                <td>{tier.advice}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

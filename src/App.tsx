@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import type { AnswerValue, PrescreenAnswer } from "./data/survey";
 import { getActiveModules, PRESCREEN_QUESTIONS } from "./data/survey";
-import { Changelog } from "./components/Changelog";
 import { Instructions } from "./components/Instructions";
 import { Prescreening, isPrescreenComplete } from "./components/Prescreening";
 import { hasActiveModules, isSurveyComplete, Questionnaire } from "./components/Questionnaire";
@@ -60,9 +59,6 @@ export default function App() {
     pruneAnswersForPrescreen(saved?.answers ?? {}, initialPrescreen),
   );
   const [validationMsg, setValidationMsg] = useState("");
-  const [showChangelog, setShowChangelog] = useState(
-    () => typeof window !== "undefined" && window.location.hash.startsWith("#changelog"),
-  );
 
   const completed = new Set<StepId>();
   if (step !== "intro") completed.add("intro");
@@ -86,18 +82,6 @@ export default function App() {
     setValidationMsg("");
     setStep(next);
     persist({ step: next });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const openChangelog = () => {
-    setShowChangelog(true);
-    window.history.replaceState(null, "", "#changelog");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const closeChangelog = () => {
-    setShowChangelog(false);
-    window.history.replaceState(null, "", window.location.pathname + window.location.search);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -172,49 +156,38 @@ export default function App() {
           <p className="app-header__subtitle">
             協助設計業自我檢視運用 AI 工具時的資通安全與法令遵循風險
           </p>
-          <div className="app-header__links">
-            <button type="button" className="app-header__link" onClick={openChangelog}>
-              改版說明
-            </button>
-          </div>
         </div>
       </header>
 
       <main className="app-main">
-        {showChangelog ? (
-          <Changelog onBack={closeChangelog} />
-        ) : (
-          <>
-            <StepNav current={step} completed={completed} />
+        <StepNav current={step} completed={completed} />
 
-            {validationMsg && <div className="validation-msg">{validationMsg}</div>}
+        {validationMsg && <div className="validation-msg">{validationMsg}</div>}
 
-            {step === "intro" && <Instructions />}
-            {step === "prescreen" && (
-              <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
-            )}
-            {step === "survey" && (
-              <Questionnaire answers={answers} prescreen={prescreen} onChange={handleAnswerChange} />
-            )}
-            {step === "result" && (
-              <Results answers={answers} prescreen={prescreen} onRestart={handleRestart} />
-            )}
+        {step === "intro" && <Instructions />}
+        {step === "prescreen" && (
+          <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
+        )}
+        {step === "survey" && (
+          <Questionnaire answers={answers} prescreen={prescreen} onChange={handleAnswerChange} />
+        )}
+        {step === "result" && (
+          <Results answers={answers} prescreen={prescreen} onRestart={handleRestart} />
+        )}
 
-            {step !== "result" && (
-              <div className="sticky-footer">
-                <div>
-                  {step !== "intro" && (
-                    <button type="button" className="btn btn--secondary" onClick={handleBack}>
-                      上一步
-                    </button>
-                  )}
-                </div>
-                <button type="button" className="btn btn--primary" onClick={handleNext}>
-                  {step === "survey" ? "查看評估結果" : "下一步"}
+        {step !== "result" && (
+          <div className="sticky-footer">
+            <div>
+              {step !== "intro" && (
+                <button type="button" className="btn btn--secondary" onClick={handleBack}>
+                  上一步
                 </button>
-              </div>
-            )}
-          </>
+              )}
+            </div>
+            <button type="button" className="btn btn--primary" onClick={handleNext}>
+              {step === "survey" ? "查看評估結果" : "下一步"}
+            </button>
+          </div>
         )}
       </main>
 
