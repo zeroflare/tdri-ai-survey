@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { AnswerValue, PrescreenAnswer } from "../data/survey";
-import { ANSWER_OPTIONS, getActiveModules } from "../data/survey";
+import { ANSWER_OPTIONS, getActiveModules, getGlossaryMatches } from "../data/survey";
 import { calculateScore, formatPoints, getQuestionPoints, getRiskLabel } from "../lib/scoring";
+import { GlossaryNotes } from "./GlossaryNotes";
 
 interface QuestionCardProps {
   id: string;
@@ -24,6 +25,7 @@ export function QuestionCard({
 }: QuestionCardProps) {
   const [showRisk, setShowRisk] = useState(false);
   const points = answer ? getQuestionPoints(answer, weight) : null;
+  const glossaryTerms = getGlossaryMatches(text, hint);
 
   return (
     <div
@@ -36,6 +38,7 @@ export function QuestionCard({
         <p className="question-card__text">{text}</p>
       </div>
       <p className="question-card__hint">可參考：{hint}</p>
+      <GlossaryNotes terms={glossaryTerms} />
 
       <div className="answer-options">
         {ANSWER_OPTIONS.map((opt) => (

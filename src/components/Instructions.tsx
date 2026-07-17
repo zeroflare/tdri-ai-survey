@@ -1,4 +1,4 @@
-import { DATA_CLASSIFICATION, getFullMaxScore, getModuleMaxScore, SCORE_TIERS, SURVEY_MODULES } from "../data/survey";
+import { DATA_CLASSIFICATION, getFullMaxScore, getModuleMaxScore, SURVEY_MODULES } from "../data/survey";
 
 export function Instructions() {
   return (
@@ -71,111 +71,6 @@ export function Instructions() {
               <tr key={row.level}>
                 <th>{row.level}</th>
                 <td>{row.examples}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card">
-        <h2 className="card__title">四、計算說明</h2>
-        <p>本表採加分制，滿分 100 分，逐題累加得分，規則如下：</p>
-        <ul>
-          <li>
-            <strong>風險權重：</strong>
-            每題依風險程度——低風險題 1 分、中風險題 2 分、高風險題 3 分。
-          </li>
-          <li>
-            <strong>加分方式：</strong>
-            依下表計算各題得分後加總；選完選項後即時顯示該題與目前總分。
-          </li>
-          <li>
-            <strong>未觸發題組：</strong>
-            前導分流選「否」的題組不顯示於問卷，也不計入本次滿分。
-          </li>
-          <li>
-            <strong>高風險題：</strong>
-            任一高風險題為「尚未做到」（得 0 分）時，不論總分高低，整體均標示「需優先處理」。
-          </li>
-        </ul>
-
-        <table className="info-table">
-          <thead>
-            <tr>
-              <th>回答</th>
-              <th>高風險題</th>
-              <th>中風險題</th>
-              <th>低風險題</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>已做到</th>
-              <td>3</td>
-              <td>2</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <th>部分做到</th>
-              <td>1.5</td>
-              <td>1</td>
-              <td>0.5</td>
-            </tr>
-            <tr>
-              <th>尚未做到</th>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <th>不知道</th>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <th>不適用</th>
-              <td>3</td>
-              <td>2</td>
-              <td>1</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="example-box">
-          <strong>計算範例</strong>
-          <p style={{ marginTop: "0.5rem" }}>
-            某設計工作室經前導分流後，觸發題組 A、B、C 與題組 D、E、F（題組 G、H 選「否」，不顯示也不計分）。
-          </p>
-          <ol>
-            <li>本次滿分 80 分（題組 G 10 分、題組 H 10 分不計入）。</li>
-            <li>題組 G、H 不顯示於問卷。</li>
-            <li>
-              作答後，「尚未做到」的題目權重合計 8 分 → 得 0 分；「部分做到」的題目權重合計 6 分 → 得一半 3 分。
-            </li>
-            <li>最終得分 = 80 − 8 − 3 = 69 分（得分率 86.3%）。</li>
-            <li>若其中有任一高風險題為「尚未做到」，則不論得分多少，整體仍標示「需優先處理」。</li>
-          </ol>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2 className="card__title">五、得分率與建議</h2>
-        <p className="card__subtitle">
-          請依得分率對照下表；無論落於何一級距，凡標示「需優先處理」之高風險題均應最先處理。
-        </p>
-        <table className="info-table">
-          <thead>
-            <tr>
-              <th>得分率</th>
-              <th>建議注意事項</th>
-            </tr>
-          </thead>
-          <tbody>
-            {SCORE_TIERS.map((tier) => (
-              <tr key={tier.label}>
-                <th>{tier.label}</th>
-                <td>{tier.advice}</td>
               </tr>
             ))}
           </tbody>
