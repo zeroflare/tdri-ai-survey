@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { useLocation } from "react-router-dom";
 import type { UserProfile } from "./BasicInfo";
 import { isFeedbackWebhookConfigured, sendFeedback } from "../lib/feedback";
 
@@ -18,7 +17,6 @@ function loadSavedProfile(): Partial<UserProfile> {
 
 export function FeedbackButton() {
   const dialogId = useId();
-  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
@@ -45,14 +43,9 @@ export function FeedbackButton() {
 
     setStatus("sending");
     const saved = loadSavedProfile();
-    const pageUrl =
-      typeof window !== "undefined"
-        ? `${window.location.origin}${location.pathname}${location.search}`
-        : `${location.pathname}${location.search}`;
 
     const sent = await sendFeedback({
       message,
-      pageUrl,
       profile: {
         name: name || saved.name,
         company: saved.company,

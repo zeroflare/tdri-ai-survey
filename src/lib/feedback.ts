@@ -3,7 +3,6 @@ import type { UserProfile } from "../components/BasicInfo";
 
 export interface FeedbackInput {
   message: string;
-  pageUrl: string;
   profile?: Partial<UserProfile>;
 }
 
@@ -11,12 +10,8 @@ export function isFeedbackWebhookConfigured(): boolean {
   return Boolean(import.meta.env.VITE_GOOGLE_CHAT_WEBHOOK);
 }
 
-function buildFeedbackMessage({ message, pageUrl, profile }: FeedbackInput): string {
-  const lines = [
-    "【台灣設計產業 AI 資安自評檢核表】意見回饋",
-    "",
-    `頁面：${pageUrl}`,
-  ];
+function buildFeedbackMessage({ message, profile }: FeedbackInput): string {
+  const lines = ["【台灣設計產業 AI 資安自評檢核表】意見回饋", ""];
 
   if (profile?.name?.trim()) lines.push(`姓名：${profile.name.trim()}`);
   if (profile?.company?.trim()) lines.push(`公司：${profile.company.trim()}`);
