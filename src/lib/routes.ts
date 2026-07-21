@@ -1,8 +1,9 @@
 import type { StepId } from "../components/StepNav";
 
 export const STEP_PATHS: Record<StepId, string> = {
-  profile: "/profile",
   intro: "/intro",
+  consent: "/consent",
+  profile: "/profile",
   prescreen: "/prescreen",
   survey: "/survey",
   result: "/result",

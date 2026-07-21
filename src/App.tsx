@@ -7,6 +7,7 @@ import {
   loadSurveyData,
 } from "./data/survey";
 import { BasicInfo, EMPTY_PROFILE, isProfileValid, type UserProfile } from "./components/BasicInfo";
+import { ConsentNotice, isConsentValid } from "./components/ConsentNotice";
 import { Instructions } from "./components/Instructions";
 import { Prescreening, isPrescreenComplete } from "./components/Prescreening";
 import { hasActiveModules, isSurveyComplete, Questionnaire } from "./components/Questionnaire";
@@ -20,6 +21,7 @@ const STORAGE_KEY = "tdri-ai-survey-state";
 const PRESCREEN_IDS = ["01", "02", "03", "04", "05", "06"] as const;
 
 interface SurveyState {
+  consentAccepted: boolean;
   profile: UserProfile;
   prescreen: Record<string, PrescreenAnswer>;
   answers: Record<string, AnswerValue>;
@@ -31,6 +33,7 @@ function loadState(): SurveyState | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SurveyState & { step?: StepId };
     return {
+      consentAccepted: Boolean(parsed.consentAccepted),
       profile: parsed.profile,
       prescreen: parsed.prescreen,
       answers: parsed.answers,
@@ -84,6 +87,7 @@ export default function App() {
   const step = pathnameToStep(location.pathname);
 
   const [bootState, setBootState] = useState<"loading" | "ready" | "error">("loading");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({ ...EMPTY_PROFILE });
   const [prescreen, setPrescreen] = useState<Record<string, PrescreenAnswer>>(defaultPrescreen());
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
@@ -97,6 +101,7 @@ export default function App() {
         if (cancelled) return;
         const saved = loadState();
         const nextPrescreen = normalizePrescreen(saved?.prescreen);
+        setConsentAccepted(Boolean(saved?.consentAccepted));
         setProfile(normalizeProfile(saved?.profile));
         setPrescreen(nextPrescreen);
         setAnswers(pruneAnswersForPrescreen(saved?.answers ?? {}, nextPrescreen));
@@ -119,6 +124,9 @@ export default function App() {
 
   const completed = new Set<StepId>();
   if (step && step !== "intro") completed.add("intro");
+  if (step === "profile" || step === "prescreen" || step === "survey" || step === "result") {
+    completed.add("consent");
+  }
   if (step === "prescreen" || step === "survey" || step === "result") completed.add("profile");
   if (step === "survey" || step === "result") completed.add("prescreen");
   if (step === "result") completed.add("survey");
@@ -126,6 +134,7 @@ export default function App() {
   const persist = useCallback(
     (next: Partial<SurveyState>) => {
       const state: SurveyState = {
+        consentAccepted,
         profile,
         prescreen,
         answers,
@@ -133,13 +142,18 @@ export default function App() {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     },
-    [profile, prescreen, answers],
+    [consentAccepted, profile, prescreen, answers],
   );
 
   const goTo = (next: StepId) => {
     setValidationMsg("");
     navigate(stepToPath(next));
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleConsentChange = (accepted: boolean) => {
+    setConsentAccepted(accepted);
+    persist({ consentAccepted: accepted });
   };
 
   const handleProfileChange = (field: keyof UserProfile, value: string) => {
@@ -164,6 +178,7 @@ export default function App() {
 
   const handleRestart = () => {
     localStorage.removeItem(STORAGE_KEY);
+    setConsentAccepted(false);
     setProfile({ ...EMPTY_PROFILE });
     setPrescreen(defaultPrescreen());
     setAnswers({});
@@ -176,6 +191,15 @@ export default function App() {
     if (!step) return;
 
     if (step === "intro") {
+      goTo("consent");
+      return;
+    }
+
+    if (step === "consent") {
+      if (!isConsentValid(consentAccepted)) {
+        setValidationMsg("請勾選同意個資蒐集聲明後再繼續。");
+        return;
+      }
       goTo("profile");
       return;
     }
@@ -215,7 +239,8 @@ export default function App() {
 
   const handleBack = () => {
     if (!step) return;
-    if (step === "profile") goTo("intro");
+    if (step === "consent") goTo("intro");
+    else if (step === "profile") goTo("consent");
     else if (step === "prescreen") goTo("profile");
     else if (step === "survey") goTo("prescreen");
     else if (step === "result") goTo("survey");
@@ -267,8 +292,11 @@ export default function App() {
         {validationMsg && <div className="validation-msg">{validationMsg}</div>}
 
         <div key={step} className="step-transition">
-          {step === "profile" && <BasicInfo profile={profile} onChange={handleProfileChange} />}
           {step === "intro" && <Instructions />}
+          {step === "consent" && (
+            <ConsentNotice accepted={consentAccepted} onChange={handleConsentChange} />
+          )}
+          {step === "profile" && <BasicInfo profile={profile} onChange={handleProfileChange} />}
           {step === "prescreen" && (
             <Prescreening answers={prescreen} onChange={handlePrescreenChange} />
           )}
